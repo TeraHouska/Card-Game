@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <link href="style.css" rel="stylesheet">
+    <title>Prsi</title>
+</head>
+<body>
+    <div class="container">
+        <header>
+            <h1>Hra Prší</h1>
+            <div class="btn-group">
+                <button onclick="newGame()">Nová Hra</button>
+                <button onclick="nextMove()">Další Tah</button>
+                <button onclick="showRules()">Pravidla</button>
+            </div>
+        </header>
+        
+        <div class="board">
+            <div class="row top-row" id="topPlayers"></div>
+            <div class="row middle-row">
+                <div class="card card-back">deck</div>
+                <div class="card card-front" id="table"></div>
+            </div>
+            <div class="row bottom-row" id="humanHand"></div>
+        </div>
+        <div id="rules"></div>
+        
+        <script src="script.js"></script>
+    </div>
+</body>
+</html>

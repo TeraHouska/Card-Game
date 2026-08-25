@@ -1,0 +1,111 @@
+:root {
+      --bg-felt: #0f5c36;
+      --bg-felt-dark: #093824;
+      --felt-light: #157a48;
+      --card-bg: #f9f7f2;
+      --card-red: #d32f2f;
+      --card-black: #1a1a1a;
+      --card-back: #2c3e50;
+      --card-back-pattern: #34495e;
+      --card-radius: 10px;
+
+      --text: #f4f4f4;
+
+      --btn-bg-color: #f4b815;
+    }
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+}
+
+html {
+    height: 100%;
+}
+
+body {
+    font-family: "Segoe UI", system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+    background: radial-gradient(circle at 50% 40%, var(--felt-light) 0%, var(--bg-felt) 50%, var(--bg-felt-dark) 100%);
+    color: var(--text);
+}
+
+.container {
+    padding: 0.8rem;
+}
+
+header {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+h1 {
+    padding: 0.2rem;
+    padding-left: 0.7rem;
+    text-shadow: 3px 3px #1a1a1a;
+}
+
+.btn-group {
+    display: flex;
+    justify-content: right;   
+}
+
+button {
+    margin: 0.5rem;
+    padding: 0.8rem;
+    background-color: var(--btn-bg-color);
+    font-weight: bold;
+    font-size: large;
+    border: solid #1a1a1a;
+    border-radius: 100px;
+    cursor: pointer;
+}
+
+.row {
+    display: flex;
+    justify-content: center;
+    gap: 4rem;
+    margin: 2rem 0;
+}
+
+.bottom-row {
+    gap: 1rem;
+}
+
+.card {
+    width: 100px;
+    height: 150px;
+    border: solid var(--card-bg);
+    border-width: 0.2rem;
+    border-radius: var(--card-radius);
+}
+
+.card-back {
+    line-height: 150px;
+    background-color: var(--card-back);
+    text-align: center;
+    font-weight: bold;
+    font-size: 2.7rem;
+}
+
+.card-front {
+    line-height: 150px;
+    background-color: var(--card-bg);
+    text-align: center;
+    font-weight: bold;
+    color: var(--card-black);
+    font-size: 2.7rem;
+}
+
+.border-glow {
+    border-color: var(--btn-bg-color);
+}
+
+.clickable {
+    cursor: pointer;
+}
+
+.red {
+    color: red;
+}
