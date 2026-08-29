@@ -79,7 +79,7 @@ function chooseQueenEffect() {
 function pcMove() {
     console.log("pcMove");
     const n = table[table.length - 1][0];
-    const c = (queen_effect!=0 && n == 12)? queen_effect: table[table.length - 1][1];
+    const c = (queen_effect && n == 12)? queen_effect: table[table.length - 1][1];
     console.log("table: " + n + " " + c);
 
     // Na stole ACE
@@ -160,10 +160,17 @@ function updateUI() {
 
     // Table
     tableElement.innerText = cardToValue(table[table.length-1]);
-    tableElement.classList.remove("red");
+    tableElement.classList.remove("red"); // set "red" property for hearts and diamonds
     if ([1,2].includes(table[table.length-1][1])) {
         tableElement.classList.add("red");
     }
+    if (table[table.length - 1][0] == 12 && queen_effect) {
+        color = [1,2].includes(queen_effect) ? "red" : "";
+        document.getElementById("queenEffect").innerHTML = `<div class="card queen-effect ${color}">${SUITS[queen_effect]}</div>`;
+    } else {
+        document.getElementById("queenEffect").innerHTML = "";
+    }
+
 
     // Human Hand
     humanHand.innerHTML = "";
