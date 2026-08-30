@@ -79,20 +79,19 @@ button {
     border: solid var(--card-bg);
     border-width: 0.2rem;
     border-radius: var(--card-radius);
+    text-align: center;
     font-size: 2.7rem;
 }
 
 .card-back {
     line-height: 150px;
     background-color: var(--card-back);
-    text-align: center;
     font-weight: bold;
 }
 
 .card-front {
     line-height: 150px;
     background-color: var(--card-bg);
-    text-align: center;
     font-weight: bold;
     color: var(--card-black);
 }
@@ -100,7 +99,6 @@ button {
 .queen-effect {
     width: 3rem;
     height: 3rem;
-    text-align: center;
     line-height: 2.4rem;
     background-color: var(--card-bg);
     border-width: 0.2rem;

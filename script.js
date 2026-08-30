@@ -1,5 +1,5 @@
 
-const cards = []; // deck
+const deck = []; // deck
 const table = [];
 const players = [];
 const SUITS = ['','♥','♦','♣','♠']
@@ -8,14 +8,36 @@ let p_number = 0; // player to move
 let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
 
-function createCards() {
-    cards.splice(0, cards.length); // clear cards
+function newGame() {
+    createDeck();
+    createPlayers(4, 4);
+    createTable();
+    p_number = 0;
+    logBoard();
+    updateUI();
+}
+
+function nextMove() {
+    makeMove(players[p_number]);
+    if (players[p_number].length == 0) {
+        console.log("Player " + p_number + " WON!!!");
+        updateUI();
+        alert("Player " + p_number + " WON!!!");
+        return;
+    }
+    p_number = (p_number + 1) % players.length;
+    logBoard();
+    updateUI();
+}
+
+function createDeck() {
+    deck.splice(0, deck.length); // clear deck
     for (let i = 7; i < 15; i++) {
         for (let j = 1; j < 5; j++) {
-            cards.push([i,j]);
+            deck.push([i,j]);
         }
     }
-    cards.sort(() => Math.random() - 0.5);
+    deck.sort(() => Math.random() - 0.5);
 }
 
 function createPlayers(p_count, c_count) {
@@ -23,7 +45,7 @@ function createPlayers(p_count, c_count) {
     for (let i = 0; i < p_count; i++) {
         let player = [];
         for (let j = 0; j < c_count; j++) {
-            player.push(cards.pop());
+            player.push(deck.pop());
         }
         players.push(player);
     }
@@ -31,7 +53,112 @@ function createPlayers(p_count, c_count) {
 
 function createTable() {
     table.splice(0, table.length);
-    table.push(cards.pop());
+    table.push(deck.pop());
+}
+
+function showRules() {
+    document.getElementById("rules").innerHTML = "<h2>Pravidla jsou velmi jednoduchá, to pochopíš</h2>";
+}
+
+function makeMove(player) {
+    const r = table[table.length-1][0];
+    let availableMoves = getAvailableMoves(player);
+    let index = chooseMove(player, availableMoves); // chooses index of a card to play
+    if (index == -1) {
+        if (r == 14 && active_card) {
+            active_card = 0;
+            console.log("stojím, další efekt 0");
+            return;
+        } else if (r == 7 && active_card) {
+            for (let i = 0; i < active_card; i++) {
+                drawCard();
+            }
+            console.log("líznul jsem si " + active_card + " karet")
+            active_card = 0;
+            return;
+        } else {
+            drawCard();
+            return;
+        }
+    }
+    playCard(player, index);
+}
+
+function getAvailableMoves(player) {
+    let moves = [];
+    const r = table[table.length-1][0];
+    const c = (queen_effect && r == 12)? queen_effect: table[table.length - 1][1];
+    if (r == 14 && active_card) { // ACE
+        for (card of player) {
+            if (card[0] == 14) {
+                moves.push(player.indexOf(card));
+            }
+        }
+    } else if (r == 7 && active_card) { // SEVEN
+        for (card of player) {
+            if (card[0] == 7) {
+                moves.push(player.indexOf(card));
+            }
+        }
+    } else {
+        for (card of player) {
+            if (card[0] == r || card[1] == c || card[0] == 12) {
+                moves.push(player.indexOf(card));
+            }
+        }
+    }
+    return moves;
+}
+
+/**
+ * Chooses a card to play (as PC) from available cards
+ * 
+ * @param {Array<Array<number>>} player - player cards
+ * @param {Array<number>} moves - indices of available moves
+ * @returns {number} index of a card to be played (-1 for drawing a card)
+ */
+function chooseMove(player, moves) {
+    if (moves.length == 0) {
+        return -1;
+    }
+    for (i of moves) {
+        if (player[i][0] != 12) {
+            return i;
+        }
+    }
+    return moves[0];
+}
+
+function chooseQueenEffect() {
+    try {
+        return players[p_number][0][1]; // return color of the first card
+    } catch (e) {return 0};
+}
+
+function playCard(player, index) {
+    console.log("player plays: " + player[index]);
+    table.push(player[index]);
+    player.splice(index, 1);
+    console.log("table:" + table[table.length-1]);
+    if (table[table.length-1][0] == 14) active_card = 1;
+    if (table[table.length-1][0] == 7) active_card += 2;
+    if (table[table.length-1][0] == 12) queen_effect = chooseQueenEffect();
+    return;
+}
+
+function drawCard() {
+    console.log("drawing a card");
+    if (deck.length == 0) {
+        console.log("FLIPPING DECK")
+        for (let i = 0; i < table.length-1; i++) {
+            deck.push(table.pop());
+        }
+    }
+    players[p_number].push(deck.pop());
+}
+
+function cardToValue(card) {
+    return RANKS[card[0]] + SUITS[card[1]];
 }
 
 function cardsToString(cardArray) {
@@ -42,106 +169,14 @@ function cardsToString(cardArray) {
     return c;
 }
 
-function cardToValue(card) {
-    return RANKS[card[0]] + SUITS[card[1]];
-}
-
 function logBoard() {
     let board = `Table: ${cardsToString(table)}\n`;
     for (let p = 0; p < players.length; p++) {
         board += `Player ${p}: ${cardsToString(players[p])}\n`;
     }
-    board += `Deck(${cards.length}): ${cardsToString(cards)}\n`;
+    board += `Deck(${deck.length}): ${cardsToString(deck)}\n`;
     console.log(board);
     /*document.getElementById("board").innerHTML = '<button onClick="nextMove()">Další tah</button>';*/
-}
-
-function showRules() {
-    document.getElementById("rules").innerHTML = "<h2>Pravidla jsou velmi jednoduchá, to pochopíš</h2>";
-}
-
-function drawCard() {
-    if (cards.length == 0) {
-        console.log("FLIPPING DECK")
-        for (let i = 0; i < table.length-1; i++) {
-            cards.push(table.pop());
-        }
-    }
-    players[p_number].push(cards.pop());
-}
-
-function chooseQueenEffect() {
-    try {
-        return players[p_number][0][1]; // return color of the first card
-    } catch (e) {return 0};
-}
-
-function pcMove() {
-    console.log("pcMove");
-    const n = table[table.length - 1][0];
-    const c = (queen_effect && n == 12)? queen_effect: table[table.length - 1][1];
-    console.log("table: " + n + " " + c);
-
-    // Na stole ACE
-    if (n == 14 && active_card) {
-        for (let i = 0; i < players[p_number].length; i++) {
-            if (players[p_number][i][0] == 14) {
-                table.push(players[p_number][i]);
-                players[p_number].splice(i, 1);
-                return;
-            }
-        }
-        active_card = 0;
-        console.log("stojím, další efekt 0");
-        return;
-    }
-
-    // Na stole SEVEN
-    if (n == 7 && active_card) {
-        for (let i = 0; i < players[p_number].length; i++) {
-            if (players[p_number][i][0] == 7) {
-                table.push(players[p_number][i]);
-                players[p_number].splice(i, 1);
-                active_card += 2;
-                return;
-            }
-        }
-        for (let i = 0; i < active_card; i++) {
-            drawCard();
-        }
-        console.log("líznul jsem si " + active_card + " karet")
-        active_card = 0;
-        return;
-    }
-
-    // Běžný tah
-    for (let i = 0; i < players[p_number].length; i++) {
-        if (players[p_number][i][0] != 12 && (players[p_number][i][0] == n || players[p_number][i][1] == c)) {
-            table.push(players[p_number][i]);
-            players[p_number].splice(i, 1);
-            if (table[table.length-1][0] == 14) active_card = 1;
-            if (table[table.length-1][0] == 7) active_card = 2;
-            return;
-        }
-    }
-
-    // Zahrání QUEEN
-    for (let i = 0; i < players[p_number].length; i++) {
-        if (players[p_number][i][0] == 12) {
-            table.push(players[p_number][i]);
-            players[p_number].splice(i, 1);
-            queen_effect = chooseQueenEffect();
-            console.log("queen played color: " + queen_effect);
-            return;
-        }
-    }
-
-    console.log("drawing a card");
-    drawCard();
-}
-
-function humanMove() {
-    
 }
 
 function updateUI() {
@@ -180,26 +215,4 @@ function updateUI() {
         let cardEl = `<div class="card card-front ${color} ${highlight}">${cardToValue(card)}</div>`
         humanHand.innerHTML += cardEl;
     }
-}
-
-function newGame() {
-    createCards();
-    createPlayers(4, 4);
-    createTable();
-    p_number = 0;
-    logBoard();
-    updateUI();
-}
-
-function nextMove() {
-    pcMove();
-    if (players[p_number].length == 0) {
-        console.log("Player " + p_number + " WON!!!");
-        updateUI();
-        alert("Player " + p_number + " WON!!!");
-        return;
-    }
-    p_number = (p_number + 1) % players.length;
-    logBoard();
-    updateUI();
 }
