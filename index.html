@@ -6,14 +6,14 @@
     <link href="style.css" rel="stylesheet">
     <title>Prsi</title>
 </head>
-<body>
+<body id="body">
     <div class="container">
         <header>
             <h1>Hra Prší</h1>
             <div class="btn-group">
-                <button onclick="newGame()">Nová Hra</button>
-                <button onclick="nextMove()">Další Tah</button>
-                <button onclick="showRules()">Pravidla</button>
+                <button id="newGame">Nová Hra</button>
+                <button id="nextMove">Další Tah</button>
+                <button id="showRules">Pravidla</button>
             </div>
         </header>
         
@@ -28,7 +28,7 @@
         </div>
         <div id="rules"></div>
         
-        <script src="script.js"></script>
+        <script type="module" src="script.js"></script>
     </div>
 </body>
 </html>
