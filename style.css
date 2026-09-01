@@ -106,6 +106,19 @@ button {
     color: var(--card-black);
 }
 
+.playable {
+    cursor: pointer;
+    border-color: var(--btn-bg-color);
+}
+
+.playable:hover {
+    transform: scale(1.05);
+}
+
+.disabled {
+    opacity: 0.70;
+}
+
 .border-glow {
     border-color: var(--btn-bg-color);
 }
