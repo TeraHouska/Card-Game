@@ -8,8 +8,9 @@ const table = [];
 const players = [];
 /** @type {Array<Player>} */
 const winners = [];
-const SUITS = ['','♥','♦','♣','♠']
-const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A']
+const SUITS = ['','♥','♦','♣','♠'];
+const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
+const NAMES = ['Jediný člověk (ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
 let p_number = 0; // player to move
 let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
@@ -42,7 +43,7 @@ function createPlayers(p_count, c_count) {
         for (let j = 0; j < c_count; j++) {
             hand.push(deck.pop());
         }
-        players.push(new Player(i, hand, i===0));
+        players.push(new Player(NAMES[i], hand, i===0));
     }
 }
 
@@ -52,7 +53,7 @@ function createTable() {
 }
 
 function nextMove() {
-    if (gameOver || players[p_number].isHuman) return;
+    if (gameOver) return;
     let moveIndex = chooseMove(players[p_number], getAvailableMoves(players[p_number]));
     makeMove(players[p_number], moveIndex);
 }
@@ -168,7 +169,7 @@ function drawCard() {
 function checkWin() {
     for (const player of players) {
         if (player.hand.length === 0) {
-            console.log("Player " + player.number + " WON!!!");
+            console.log("Player " + player.name + " WON!!!");
             winners.push(player);
             players.splice(players.indexOf(player), 1);
             p_number -= 1;
@@ -176,13 +177,48 @@ function checkWin() {
             console.log(winners);
             if (players.length <= 1) {
                 gameOver = true;
+                showOverlay("leaderBoard");
             }
         }
     }
 }
 
-function showRules() {
-    document.getElementById("rules").innerHTML = "<h2>Pravidla jsou velmi jednoduchá, to pochopíš</h2>";
+/** Displays Overlay with an info
+ * 
+ * @param {string} content - "rules" or "leaderBoard" 
+ */
+function showOverlay(content) {
+    document.getElementById("overlay").classList.add("open");
+    if (content === "rules") {
+        document.getElementById("overlay-board").classList.remove("leader-board");
+        document.getElementById("overlay-board").innerHTML = 
+            `<h2>Jak hrát</h2>
+            <p>Pravidla jsou podobná karetní hře <strong>prší</strong>, nebo <strong>UNO</strong>.</p>
+            <ul>
+                <li>Na začátku každý hráč dostane <strong>4 karty</strong>.</li>
+                <li>Hráč, který je na řadě odhodí kartu, která se shoduje s kartou na stole buď <strong>barvou</strong> (♠ ♥ ♦ ♣) nebo <strong>hodnotou</strong> (A, 2, 3 … K).</li>
+                <li>Pokud hráč nemá v ruce kartu, kterou může zahrát, lízne si jednu kartu z balíčku.</li>
+                <li><strong>Karta Q</strong> je měnič a lze s ní změnit barvu na stole.</li>
+                <li><strong>Karta A</strong> je eso. Další hráč musí zahrát buď eso, nebo se zdržet tahu.</li>
+                <li>Po zahrání <strong>karty 7</strong> musí další hráč zahrát také <strong>kartu 7</strong>, nebo si lízne za každou takto zahranou <strong>kartu 7</strong> dvě karty. (maximálně 8)</li>
+                <li><strong>Vítězem</strong> je ten hráč, kterému nezbydou v ruce žádné karty!</li>
+            </ul>
+            <button id="btnCloseRules">Chápu</button>`; 
+        document.getElementById('btnCloseRules').addEventListener('click', () => {
+            document.getElementById('overlay').classList.remove('open');
+        });
+    } else if (content === "leaderBoard") {
+        document.getElementById("overlay-board").classList.add("leader-board");
+        let innerContent = `<h2>Síň slávy</h2><ol>`;
+        winners.forEach(winner => {innerContent += `<li>${winner.name}</li>`});
+        innerContent += `<li>${players[0].name}</li>`;
+        innerContent += `</ol><button id="btnRestart">Hrát znovu</button>`;
+        document.getElementById("overlay-board").innerHTML = innerContent;
+        document.getElementById('btnRestart').addEventListener('click', () => {
+            document.getElementById('overlay').classList.remove('open');
+            newGame();
+        });
+    }
 }
 
 function cardToValue(card) {
@@ -264,8 +300,23 @@ function updateUI() {
     } else {
         document.getElementById("queenEffect").innerHTML = "";
     }
+    // Next Move Button
+    if (players[p_number].isHuman) {
+        document.getElementById("nextMove").classList.add("disabled");
+    } else {document.getElementById("nextMove").classList.remove("disabled")}
 }
-
+// Event listeners
 document.getElementById("newGame").addEventListener("click", newGame);
 document.getElementById("nextMove").addEventListener("click", nextMove);
-document.getElementById("showRules").addEventListener("click", showRules);
+document.getElementById('btnRules').addEventListener('click', () => {
+    //document.getElementById('overlay').classList.add('open');
+    showOverlay("rules");
+});
+// closing overlay
+
+document.getElementById("overlay").addEventListener("click", (e) => {
+    if (e.target === document.getElementById('overlay'))
+        document.getElementById('overlay').classList.remove('open');
+});
+
+newGame();

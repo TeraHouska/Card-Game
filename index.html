@@ -7,13 +7,13 @@
     <title>Prsi</title>
 </head>
 <body id="body">
-    <div class="container">
+    <div class="container" id="container">
         <header>
             <h1>Hra Prší</h1>
             <div class="btn-group">
                 <button id="newGame">Nová Hra</button>
                 <button id="nextMove">Další Tah</button>
-                <button id="showRules">Pravidla</button>
+                <button id="btnRules">Pravidla</button>
             </div>
         </header>
         
@@ -26,7 +26,9 @@
             </div>
             <div class="row bottom-row" id="humanHand"></div>
         </div>
-        <div id="rules"></div>
+        <div class="overlay" id="overlay">
+            <div class="overlay-board" id="overlay-board"></div>
+        </div>
         
         <script type="module" src="script.js"></script>
     </div>

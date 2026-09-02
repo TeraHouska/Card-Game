@@ -1,13 +1,13 @@
 export class Player {
-    /** @type {number} */
-    number;
+    /** @type {string} */
+    name;
     /** @type {Array<Card>} */
     hand = [];
     /** @type {boolean} */
     isHuman;
 
-    constructor(number, hand, isHuman=false) {
-        this.number = number;
+    constructor(name, hand, isHuman=false) {
+        this.name = name;
         this.hand = hand;
         this.isHuman = isHuman;
     }

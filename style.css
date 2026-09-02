@@ -8,6 +8,7 @@
       --card-back: #2c3e50;
       --card-back-pattern: #34495e;
       --card-radius: 10px;
+      --overlay-btn-bg: #d3d9d2;
 
       --text: #f4f4f4;
 
@@ -116,7 +117,8 @@ button {
 }
 
 .disabled {
-    opacity: 0.70;
+    opacity: 0.65;
+    pointer-events: none;
 }
 
 .border-glow {
@@ -129,4 +131,53 @@ button {
 
 .red {
     color: red;
+}
+
+.overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(0,0,0,0.7);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 100;
+    opacity: 0;
+    pointer-events: none;
+}
+
+.overlay.open {
+    opacity: 1;
+    pointer-events: auto;
+}
+
+.overlay-board {
+    background: var(--card-bg);
+    color: #1a1a1a;
+    max-width: 520px;
+    width: 90%;
+    border-radius: var(--card-radius);
+    padding: 1rem 1.5rem;
+}
+
+.overlay-board h2 {
+    padding-bottom: 0.3rem;
+}
+
+.overlay-board ul, ol {
+    padding: 0 1rem;
+}
+
+.leader-board {
+    text-align: center;
+    font-size: large;
+    font-weight: bold;
+    width: 320px;
+}
+
+.leader-board li {
+    padding-top: 0.3rem;
+}
+
+.overlay button {
+    background-color: var(--overlay-btn-bg);
 }
