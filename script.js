@@ -7,7 +7,7 @@ const table = [];
 /** @type {Array<Player>} */
 const players = [];
 /** @type {Array<Player>} */
-const winners = [];
+let winners = [];
 const SUITS = ['','♥','♦','♣','♠'];
 const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const NAMES = ['Jediný člověk (ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
@@ -17,6 +17,7 @@ let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
 let gameOver = false;
 
 function newGame() {
+    winners = [];
     createDeck();
     createPlayers(4, 4);
     createTable();
@@ -62,11 +63,11 @@ function nextMove() {
 function makeMove(player, index) {
     console.log("player index: " + p_number + "makes a move↓")
     const r = table[table.length-1].rank;
-    if (index == -1) {
-        if (r == 14 && active_card) {
+    if (index === -1) {
+        if (r === 14 && active_card) {
             active_card = 0;
             console.log("stojím, další efekt 0");
-        } else if (r == 7 && active_card) {
+        } else if (r === 7 && active_card) {
             for (let i = 0; i < active_card; i++) {
                 drawCard();
             }
@@ -94,21 +95,21 @@ function getAvailableMoves(player) {
     let moves = [];
     const r = table[table.length-1].rank;
     const s = (queen_effect && r == 12)? queen_effect: table[table.length - 1].suit;
-    if (r == 14 && active_card) { // ACE
+    if (r === 14 && active_card) { // ACE
         for (const card of player.hand) {
-            if (card.rank == 14) {
+            if (card.rank === 14) {
                 moves.push(player.hand.indexOf(card));
             }
         }
-    } else if (r == 7 && active_card) { // SEVEN
+    } else if (r === 7 && active_card) { // SEVEN
         for (const card of player.hand) {
-            if (card.rank == 7) {
+            if (card.rank === 7) {
                 moves.push(player.hand.indexOf(card));
             }
         }
     } else {
         for (const card of player.hand) {
-            if (card.rank == r || card.suit == s || card.rank == 12) {
+            if (card.rank === r || card.suit === s || card.rank === 12) {
                 moves.push(player.hand.indexOf(card));
             }
         }
@@ -125,11 +126,11 @@ function getAvailableMoves(player) {
  * @returns {number} index of a card to be played (-1 for drawing a card)
  */
 function chooseMove(player, moves) {
-    if (moves.length == 0) {
+    if (moves.length === 0) {
         return -1;
     }
     for (const i of moves) {
-        if (player.hand[i].rank != 12) {
+        if (player.hand[i].rank !== 12) {
             return i;
         }
     }
@@ -294,7 +295,7 @@ function updateUI() {
         tableElement.classList.add("red");
     }
     // Queen effect symbol
-    if (table[table.length - 1].rank == 12 && queen_effect) {
+    if (table[table.length - 1].rank === 12 && queen_effect) {
         let color = [1,2].includes(queen_effect) ? "red" : "";
         document.getElementById("queenEffect").innerHTML = `<div class="card queen-effect ${color}">${SUITS[queen_effect]}</div>`;
     } else {
