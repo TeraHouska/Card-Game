@@ -16,15 +16,50 @@ let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
 let gameOver = false;
 
+let playerCount = 4;
+let cardsInHand = 4;
+
 function newGame() {
     winners = [];
     createDeck();
-    createPlayers(4, 4);
+    createPlayers(playerCount, cardsInHand);
     createTable();
     p_number = 0;
     gameOver = false;
     logBoard();
     updateUI();
+}
+
+/** Makes an auto-move for player in turn (used for PC players, works for any player)
+ */
+function nextMove() {
+    if (gameOver) return;
+    let moveIndex = chooseMove(players[p_number], getAvailableMoves(players[p_number]));
+    makeMove(players[p_number], moveIndex);
+}
+
+// for PC and human player
+function makeMove(player, index) {
+    const r = table[table.length-1].rank;
+    if (index === -1) {
+        if (r === 14 && active_card) {
+            active_card = 0;
+        } else if (r === 7 && active_card) {
+            for (let i = 0; i < active_card; i++) {
+                drawCard();
+            }
+            active_card = 0;
+        } else {
+            drawCard();
+        }
+    } else {playCard(player, index);}
+    checkWin();
+    p_number = (p_number + 1) % players.length;
+    logBoard();
+    updateUI();
+    /*let pl = 0;
+    players.forEach(p => pl += p.hand.length);
+    if (table.length + deck.length + pl !== 32) alert("Not 32 cards");*/
 }
 
 function createDeck() {
@@ -53,43 +88,9 @@ function createTable() {
     table.push(deck.pop());
 }
 
-function nextMove() {
-    if (gameOver) return;
-    let moveIndex = chooseMove(players[p_number], getAvailableMoves(players[p_number]));
-    makeMove(players[p_number], moveIndex);
-}
-
-// for PC and human player
-function makeMove(player, index) {
-    console.log("player index: " + p_number + "makes a move↓")
-    const r = table[table.length-1].rank;
-    if (index === -1) {
-        if (r === 14 && active_card) {
-            active_card = 0;
-            console.log("stojím, další efekt 0");
-        } else if (r === 7 && active_card) {
-            for (let i = 0; i < active_card; i++) {
-                drawCard();
-            }
-            console.log("líznul jsem si " + active_card + " karet")
-            active_card = 0;
-        } else {
-            drawCard();
-        }
-    } else {playCard(player, index);}
-    checkWin();
-    p_number = (p_number + 1) % players.length;
-    logBoard();
-    updateUI();
-    let pl = 0;
-    players.forEach(p => pl += p.hand.length);
-    if (table.length + deck.length + pl !== 32) alert("Not 32 cards");
-}
-
-/**
- * 
+/** Gets array of which indices in players hand are available to play
  * @param {Player} player 
- * @returns array of indexes of cards available to play
+ * @returns array of indices of cards available to play
  */
 function getAvailableMoves(player) {
     let moves = [];
@@ -114,16 +115,13 @@ function getAvailableMoves(player) {
             }
         }
     }
-    console.log(moves);
     return moves;
 }
 
-/**
- * Chooses a card to play (as PC) from available cards
- * 
+/** Chooses a card to play (as PC) from available cards
  * @param {Player} player - player
  * @param {Array<number>} moves - indices of available moves
- * @returns {number} index of a card to be played (-1 for drawing a card)
+ * @returns {number} index of a card to be played (-1 if cannot play a card)
  */
 function chooseMove(player, moves) {
     if (moves.length === 0) {
@@ -145,7 +143,6 @@ function chooseQueenEffect() {
 function playCard(player, index) {
     table.push(player.hand[index]);
     player.hand.splice(index, 1);
-    console.log("table:" + table[table.length-1].rank + "," + table[table.length-1].suit);
     if (table[table.length-1].rank === 14) active_card = 1;
     if (table[table.length-1].rank === 7) active_card += 2;
     if (table[table.length-1].rank === 12) queen_effect = chooseQueenEffect();
@@ -153,10 +150,8 @@ function playCard(player, index) {
 }
 
 function drawCard() {
-    console.log("drawing a card");
     if (deck.length === 0) { // Flipping deck
         if (table.length === 1) throw "Deck empty";
-        console.log("FLIPPING DECK")
         let t = table.pop();
         const l = table.length;
         for (let i = 0; i < l; i++) {
@@ -170,12 +165,9 @@ function drawCard() {
 function checkWin() {
     for (const player of players) {
         if (player.hand.length === 0) {
-            console.log("Player " + player.name + " WON!!!");
             winners.push(player);
             players.splice(players.indexOf(player), 1);
             p_number -= 1;
-            console.log("winners:");
-            console.log(winners);
             if (players.length <= 1) {
                 gameOver = true;
                 showOverlay("leaderBoard");
@@ -184,8 +176,19 @@ function checkWin() {
     }
 }
 
-/** Displays Overlay with an info
- * 
+function cardToValue(card) {
+    return RANKS[card.rank] + SUITS[card.suit];
+}
+
+function cardsToString(cardArray) {
+    let c = "";
+    for (let i = 0; i < cardArray.length; i++) {
+        c += `[${cardArray[i].rank},${cardArray[i].suit}] `;
+    }
+    return c;
+}
+
+/** Generates and displays Overlay with an info
  * @param {string} content - "rules" or "leaderBoard" 
  */
 function showOverlay(content) {
@@ -220,18 +223,6 @@ function showOverlay(content) {
             newGame();
         });
     }
-}
-
-function cardToValue(card) {
-    return RANKS[card.rank] + SUITS[card.suit];
-}
-
-function cardsToString(cardArray) {
-    let c = "";
-    for (let i = 0; i < cardArray.length; i++) {
-        c += `[${cardArray[i].rank},${cardArray[i].suit}] `;
-    }
-    return c;
 }
 
 function logBoard() {
@@ -283,7 +274,9 @@ function updateUI() {
     deckElement.innerText = "deck";
     if (players[p_number].isHuman) {
         deckElement.classList.add("playable");
-        deckElement.addEventListener('click', () => {makeMove(players[p_number], -1);console.log("DRAWING HUMAN TRIGGERED")});
+        deckElement.addEventListener('click', () => {
+            makeMove(players[p_number], -1);
+        });
     }
     document.getElementById("deck").innerHTML = "";
     document.getElementById("deck").appendChild(deckElement);
@@ -306,15 +299,15 @@ function updateUI() {
         document.getElementById("nextMove").classList.add("disabled");
     } else {document.getElementById("nextMove").classList.remove("disabled")}
 }
+
 // Event listeners
 document.getElementById("newGame").addEventListener("click", newGame);
 document.getElementById("nextMove").addEventListener("click", nextMove);
 document.getElementById('btnRules').addEventListener('click', () => {
-    //document.getElementById('overlay').classList.add('open');
     showOverlay("rules");
 });
-// closing overlay
 
+// Closing overlay
 document.getElementById("overlay").addEventListener("click", (e) => {
     if (e.target === document.getElementById('overlay'))
         document.getElementById('overlay').classList.remove('open');
