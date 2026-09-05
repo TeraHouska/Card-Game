@@ -86,6 +86,9 @@ function createPlayers(p_count, c_count) {
 function createTable() {
     table.splice(0, table.length);
     table.push(deck.pop());
+    if (table[table.length-1].rank === 14) active_card = 1;
+    if (table[table.length-1].rank === 7) active_card = 2;
+    if (table[table.length-1].rank === 12) queen_effect = deck[0].suit;
 }
 
 /** Gets array of which indices in players hand are available to play
