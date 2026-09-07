@@ -32,14 +32,23 @@ function newGame() {
 
 /** Makes an auto-move for player in turn (used for PC players, works for any player)
  */
-function nextMove() {
+async function nextMove(UIskipped=false) {
     if (gameOver) return;
     let moveIndex = chooseMove(players[p_number], getAvailableMoves(players[p_number]));
-    makeMove(players[p_number], moveIndex);
+    await makeMove(players[p_number], moveIndex, UIskipped);
+}
+
+/** Makes PC moves until Human's turn or until gameOver
+ */
+async function fastForward() {
+    while (!players[p_number].isHuman && !gameOver) {
+        await nextMove(true);
+    }
+    updateUI();
 }
 
 // for PC and human player
-async function makeMove(player, index) {
+async function makeMove(player, index, UIskipped=false) {
     const r = table[table.length-1].rank;
     if (index === -1) {
         if (r === 14 && active_card) {
@@ -56,6 +65,7 @@ async function makeMove(player, index) {
     checkWin();
     p_number = (p_number + 1) % players.length;
     logBoard();
+    if (UIskipped) return;
     updateUI();
 }
 
@@ -159,7 +169,6 @@ function chooseMove(player, moves) {
 
 async function chooseQueenEffect() {
     if (players[p_number].isHuman) {
-        //let effect = await getHumanQueenEffect();
         return await getHumanQueenEffect();
     }
     // computer choice (color of the first non-12 card)
@@ -186,7 +195,6 @@ function getHumanQueenEffect() {
 
         const handler = (event) => {
             const suit = event.target.value;
-            console.log(suit);
             QEEl.innerHTML = "";
             QEEl.style.display = "none";
             resolve(suit);
@@ -329,18 +337,21 @@ function updateUI(disabled=false) {
     } else {
         QEEl.style.display = "none";
     }
-    // Next Move Button
+    // Disable skip buttons (NextMove and FastForward)
     if (players[p_number].isHuman) {
         document.getElementById("nextMove").classList.add("disabled");
-    } else {document.getElementById("nextMove").classList.remove("disabled")}
+        document.getElementById("fastForward").classList.add("disabled");
+    } else {
+        document.getElementById("nextMove").classList.remove("disabled");
+        document.getElementById("fastForward").classList.remove("disabled");
+    }
 }
 
 // Event listeners
 document.getElementById("newGame").addEventListener("click", newGame);
-document.getElementById("nextMove").addEventListener("click", nextMove);
-document.getElementById('btnRules').addEventListener('click', () => {
-    showOverlay("rules");
-});
+document.getElementById("nextMove").addEventListener("click", () => nextMove());
+document.getElementById("fastForward").addEventListener("click", fastForward);
+document.getElementById('btnRules').addEventListener('click', () => showOverlay("rules"));
 
 // Closing overlay
 document.getElementById("overlay").addEventListener("click", (e) => {
