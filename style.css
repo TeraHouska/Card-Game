@@ -109,15 +109,6 @@ button {
     padding: 0.2rem 0.3rem;
 }
 
-.playable {
-    cursor: pointer;
-    border-color: var(--btn-bg-color);
-}
-
-.playable:hover {
-    transform: scale(1.08);
-}
-
 .disabled {
     opacity: 0.65;
     pointer-events: none;
@@ -129,6 +120,7 @@ button {
 
 .clickable {
     cursor: pointer;
+    border-color: var(--btn-bg-color);
 }
 
 .clickable:hover {

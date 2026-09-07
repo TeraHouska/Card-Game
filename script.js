@@ -284,15 +284,13 @@ function updateUI(disabled=false) {
                 playableIndices = getAvailableMoves(player);
             }
             for (const card of player.hand) {
-                let playable = playableIndices.includes(player.hand.indexOf(card)) ? "playable" : "disabled";
-                //let highlight = players.indexOf(player) == p_number ? "border-glow" : "";
+                let playable = playableIndices.includes(player.hand.indexOf(card));
                 let cardEl = document.createElement("div");
-                cardEl.classList = `card card-front ${card.color} ${playable}`;
+                cardEl.classList = `card card-front ${card.color} ${playable?"clickable":"disabled"}`;
                 cardEl.innerText = cardToValue(card);
-                if (playable === "playable") {
+                if (playable) {
                     cardEl.addEventListener('click', () => {makeMove(player, player.hand.indexOf(card))});
                 }
-                //let cardEl = `<div class="card card-front ${card.color} ${playable}">${cardToValue(card)}</div>`
                 humanHand.appendChild(cardEl);
             }
             continue;
@@ -307,7 +305,7 @@ function updateUI(disabled=false) {
     deckElement.classList.add("card", "card-back");
     deckElement.innerText = "deck";
     if (players[p_number].isHuman && !disabled) {
-        deckElement.classList.add("playable");
+        deckElement.classList.add("clickable");
         deckElement.addEventListener('click', () => {
             makeMove(players[p_number], -1);
         });
