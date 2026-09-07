@@ -98,13 +98,15 @@ button {
 }
 
 .queen-effect {
-    width: 3rem;
-    height: 3rem;
+    width: fit-content;
+    height: fit-content;
     line-height: 2.4rem;
-    background-color: var(--card-bg);
-    border-width: 0.2rem;
-    border-radius: var(--card-radius);
-    color: var(--card-black);
+    display: grid;
+}
+
+.queen-effect li {
+    list-style-type: none;
+    padding: 0.2rem 0.3rem;
 }
 
 .playable {
@@ -113,7 +115,7 @@ button {
 }
 
 .playable:hover {
-    transform: scale(1.05);
+    transform: scale(1.08);
 }
 
 .disabled {
@@ -127,6 +129,10 @@ button {
 
 .clickable {
     cursor: pointer;
+}
+
+.clickable:hover {
+    transform: scale(1.08);
 }
 
 .red {

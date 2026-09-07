@@ -39,7 +39,7 @@ function nextMove() {
 }
 
 // for PC and human player
-function makeMove(player, index) {
+async function makeMove(player, index) {
     const r = table[table.length-1].rank;
     if (index === -1) {
         if (r === 14 && active_card) {
@@ -52,14 +52,11 @@ function makeMove(player, index) {
         } else {
             drawCard();
         }
-    } else {playCard(player, index);}
+    } else {await playCard(player, index);}
     checkWin();
     p_number = (p_number + 1) % players.length;
     logBoard();
     updateUI();
-    /*let pl = 0;
-    players.forEach(p => pl += p.hand.length);
-    if (table.length + deck.length + pl !== 32) alert("Not 32 cards");*/
 }
 
 function createDeck() {
@@ -89,6 +86,28 @@ function createTable() {
     if (table[table.length-1].rank === 14) active_card = 1;
     if (table[table.length-1].rank === 7) active_card = 2;
     if (table[table.length-1].rank === 12) queen_effect = deck[0].suit;
+}
+
+async function playCard(player, index) {
+    table.push(player.hand[index]);
+    player.hand.splice(index, 1);
+    if (table[table.length-1].rank === 14) active_card = 1;
+    if (table[table.length-1].rank === 7) active_card += 2;
+    if (table[table.length-1].rank === 12) queen_effect = await chooseQueenEffect();
+    return;
+}
+
+function drawCard() {
+    if (deck.length === 0) { // Flipping deck
+        if (table.length === 1) throw "Deck empty";
+        let t = table.pop();
+        const l = table.length;
+        for (let i = 0; i < l; i++) {
+            deck.push(table.pop());
+        }
+        table.push(t);
+    }
+    players[p_number].hand.push(deck.pop());
 }
 
 /** Gets array of which indices in players hand are available to play
@@ -138,31 +157,43 @@ function chooseMove(player, moves) {
     return moves[0];
 }
 
-function chooseQueenEffect() {
-    if (players[p_number].hand.length === 0) return 0;
-    return players[p_number].hand[0].suit; // return suit of the first card
-}
-
-function playCard(player, index) {
-    table.push(player.hand[index]);
-    player.hand.splice(index, 1);
-    if (table[table.length-1].rank === 14) active_card = 1;
-    if (table[table.length-1].rank === 7) active_card += 2;
-    if (table[table.length-1].rank === 12) queen_effect = chooseQueenEffect();
-    return;
-}
-
-function drawCard() {
-    if (deck.length === 0) { // Flipping deck
-        if (table.length === 1) throw "Deck empty";
-        let t = table.pop();
-        const l = table.length;
-        for (let i = 0; i < l; i++) {
-            deck.push(table.pop());
-        }
-        table.push(t);
+async function chooseQueenEffect() {
+    if (players[p_number].isHuman) {
+        //let effect = await getHumanQueenEffect();
+        return await getHumanQueenEffect();
     }
-    players[p_number].hand.push(deck.pop());
+    // computer choice (color of the first non-12 card)
+    let hand = players[p_number].hand;
+    if (hand.length === 0) return 0;
+    for (let i = 0; i < hand.length; i++) {
+        if (hand[i].rank !== 12) {
+            return hand[i].suit;
+        } else return 0;
+    }
+}
+
+function getHumanQueenEffect() {
+    updateUI(true);
+    return new Promise((resolve) => {
+        const QEEl = document.getElementById("queenEffect");
+        QEEl.style.display = "grid";
+        QEEl.style.gridTemplateColumns = "1fr 1fr";
+        QEEl.innerHTML = `<li class="clickable red" value="1">♥</li>
+                    <li class="clickable red" value="2">♦</li>
+                    <li class="clickable" value="3">♣</li>
+                    <li class="clickable" value="4">♠</li>`;
+        const items = QEEl.querySelectorAll("li");
+
+        const handler = (event) => {
+            const suit = event.target.value;
+            console.log(suit);
+            QEEl.innerHTML = "";
+            QEEl.style.display = "none";
+            resolve(suit);
+        }
+
+        items.forEach(item => item.addEventListener("click", handler))
+    });
 }
 
 function checkWin() {
@@ -237,7 +268,7 @@ function logBoard() {
     console.log(board);
 }
 
-function updateUI() {
+function updateUI(disabled=false) {
     const topPlayers = document.getElementById("topPlayers");
     const humanHand = document.getElementById("humanHand");
     const tableElement = document.getElementById("table");
@@ -249,7 +280,7 @@ function updateUI() {
         if (player.isHuman) {
             // make clickable if human's turn
             let playableIndices = [];
-            if (players.indexOf(player) === p_number) {
+            if (players.indexOf(player) === p_number && !disabled) {
                 playableIndices = getAvailableMoves(player);
             }
             for (const card of player.hand) {
@@ -275,7 +306,7 @@ function updateUI() {
     let deckElement = document.createElement("div");
     deckElement.classList.add("card", "card-back");
     deckElement.innerText = "deck";
-    if (players[p_number].isHuman) {
+    if (players[p_number].isHuman && !disabled) {
         deckElement.classList.add("playable");
         deckElement.addEventListener('click', () => {
             makeMove(players[p_number], -1);
@@ -291,11 +322,14 @@ function updateUI() {
         tableElement.classList.add("red");
     }
     // Queen effect symbol
+    const QEEl = document.getElementById("queenEffect");
     if (table[table.length - 1].rank === 12 && queen_effect) {
-        let color = [1,2].includes(queen_effect) ? "red" : "";
-        document.getElementById("queenEffect").innerHTML = `<div class="card queen-effect ${color}">${SUITS[queen_effect]}</div>`;
+        QEEl.style.display = "grid";
+        QEEl.style.gridTemplateColumns = "1fr";
+        const color = [1,2].includes(queen_effect) ? "red" : "";
+        QEEl.innerHTML =  `<li class="${color}">${SUITS[queen_effect]}</li>`;
     } else {
-        document.getElementById("queenEffect").innerHTML = "";
+        QEEl.style.display = "none";
     }
     // Next Move Button
     if (players[p_number].isHuman) {
