@@ -71,6 +71,7 @@ button {
 }
 
 .bottom-row {
+    margin-bottom: 0;
     gap: 1rem;
 }
 
@@ -95,6 +96,13 @@ button {
     background-color: var(--card-bg);
     font-weight: bold;
     color: var(--card-black);
+}
+
+.player-name {
+    font-weight: bold;
+    font-size: large;
+    text-align: center;
+    padding-top: 0.5rem;
 }
 
 .queen-effect {

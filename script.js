@@ -10,7 +10,7 @@ const players = [];
 let winners = [];
 const SUITS = ['','♥','♦','♣','♠'];
 const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
-const NAMES = ['Jediný člověk (ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
+const NAMES = ['Jediný člověk (Ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
 let p_number = 0; // player to move
 let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
@@ -281,7 +281,7 @@ function updateUI(disabled=false) {
     const humanHand = document.getElementById("humanHand");
     const tableElement = document.getElementById("table");
 
-    // Top Players
+    // Players
     topPlayers.innerHTML = "";
     humanHand.innerHTML = "";
     for (const player of players) {
@@ -304,22 +304,22 @@ function updateUI(disabled=false) {
             continue;
         }
         let highlight = players.indexOf(player) == p_number ? "border-glow" : "";
-        let playerEl = `<div class="card card-back ${highlight}" id="player${players.indexOf(player)}">${player.hand.length}</div>`;
+        let playerEl = `<div>
+            <div class="card card-back ${highlight}" id="player${players.indexOf(player)}">${player.hand.length}</div>
+            <p class="player-name">${player.name}</p></div>`;
         topPlayers.innerHTML += playerEl;
     }
 
     // Deck
-    let deckElement = document.createElement("div");
-    deckElement.classList.add("card", "card-back");
-    deckElement.innerText = "deck";
+    const deckElement = document.getElementById("deck");
+    const deckClone = deckElement.cloneNode(true);
+    deckElement.parentNode.replaceChild(deckClone, deckElement);
+    deckClone.classList.remove("clickable");
     if (players[p_number].isHuman && !disabled) {
-        deckElement.classList.add("clickable");
-        deckElement.addEventListener('click', () => {
-            makeMove(players[p_number], -1);
-        });
+        deckClone.classList.add("clickable");
+        const humanDrawCard = () => makeMove(players[p_number], -1);
+        deckClone.addEventListener("click", humanDrawCard);
     }
-    document.getElementById("deck").innerHTML = "";
-    document.getElementById("deck").appendChild(deckElement);
 
     // Table
     tableElement.innerText = cardToValue(table[table.length-1]);
