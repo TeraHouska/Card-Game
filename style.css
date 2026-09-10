@@ -166,6 +166,7 @@ button {
 }
 
 .overlay-board h2 {
+    text-align: center;
     padding-bottom: 0.3rem;
 }
 
@@ -173,15 +174,14 @@ button {
     padding: 0 1rem;
 }
 
-.leader-board {
-    text-align: center;
-    font-size: large;
-    font-weight: bold;
-    width: 320px;
+.overlay table {
+    width: 100%;
 }
 
-.leader-board li {
-    padding-top: 0.3rem;
+.overlay th, td {
+    text-align: left;
+    padding: 0.3rem;
+    font-size: large;
 }
 
 .overlay button {

@@ -5,9 +5,11 @@ const deck = [];
 /** @type {Array<Card>} */
 const table = [];
 /** @type {Array<Player>} */
+const allPlayers = [];
+/** @type {Array<Player>} */
 const players = [];
 /** @type {Array<Player>} */
-let winners = [];
+const winners = [];
 const SUITS = ['','♥','♦','♣','♠'];
 const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const NAMES = ['Jediný člověk (Ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
@@ -20,9 +22,8 @@ let playerCount = 4;
 let cardsInHand = 4;
 
 function newGame() {
-    winners = [];
     createDeck();
-    createPlayers(playerCount, cardsInHand);
+    resetPlayers(cardsInHand);
     createTable();
     p_number = 0;
     gameOver = false;
@@ -79,14 +80,24 @@ function createDeck() {
     deck.sort(() => Math.random() - 0.5);
 }
 
-function createPlayers(p_count, c_count) {
-    players.splice(0, players.length);
+function createPlayers(p_count) {
+    allPlayers.splice(0, allPlayers.length);
     for (let i = 0; i < p_count; i++) {
+        allPlayers.push(new Player(NAMES[i], i===0));
+    }
+}
+
+/** Resets arrays of players to New Game state and deals them cards */
+function resetPlayers(c_count) {
+    players.splice(0, players.length);
+    winners.splice(0, winners.length);
+    allPlayers.forEach(p => players.push(p));
+    for (const player of players) {
         let hand = [];
-        for (let j = 0; j < c_count; j++) {
+        for (let i = 0; i < c_count; i++) {
             hand.push(deck.pop());
         }
-        players.push(new Player(NAMES[i], hand, i===0));
+        player.hand = hand;
     }
 }
 
@@ -209,13 +220,32 @@ function checkWin() {
         if (player.hand.length === 0) {
             winners.push(player);
             players.splice(players.indexOf(player), 1);
+            player.enterScore(getWinnerScore());
             p_number -= 1;
-            if (players.length <= 1) {
+            if (players.length === 1) {
+                players[0].enterScore(0);
+                winners.push(players[0]);
                 gameOver = true;
                 showOverlay("leaderBoard");
             }
         }
     }
+}
+
+/** Returns sum of values of remaining player's hands*/
+function getWinnerScore() {
+    let score = 0;
+    players.forEach(player => score += cardsToScore(player.hand));
+    return score;
+}
+
+/** Returns value of a players hand (card array)
+ * @param {Array<Card>} cardArray player's hand
+ */
+function cardsToScore(cardArray) {
+    let score = 0;
+    cardArray.forEach(card => card.rank === 12 ? score += 20 : score += card.rank);
+    return score;
 }
 
 function cardToValue(card) {
@@ -255,10 +285,21 @@ function showOverlay(content) {
         });
     } else if (content === "leaderBoard") {
         document.getElementById("overlay-board").classList.add("leader-board");
-        let innerContent = `<h2>Síň slávy</h2><ol>`;
-        winners.forEach(winner => {innerContent += `<li>${winner.name}</li>`});
-        innerContent += `<li>${players[0].name}</li>`;
-        innerContent += `</ol><button id="btnRestart">Hrát znovu</button>`;
+        let innerContent = `<h2>Síň slávy</h2><table>
+                    <thead>
+                        <tr>
+                            <th>Pořadí</th>
+                            <th>Jméno</th>
+                            <th>Skóre</th>
+                            <th>Celkem</th>
+                        </tr>
+                    </thead><tbody>`;
+        winners.forEach((winner, index) => {innerContent += `<tr>
+            <td>${index+1 + "."}</td>
+            <td>${winner.name}</td>
+            <td>${winner.lastScore}</td>
+            <td>${winner.score}</td></tr>`});
+        innerContent += `</tbody></table><button id="btnRestart">Hrát znovu</button>`;
         document.getElementById("overlay-board").innerHTML = innerContent;
         document.getElementById('btnRestart').addEventListener('click', () => {
             document.getElementById('overlay').classList.remove('open');
@@ -359,4 +400,5 @@ document.getElementById("overlay").addEventListener("click", (e) => {
         document.getElementById('overlay').classList.remove('open');
 });
 
+createPlayers(playerCount);
 newGame();

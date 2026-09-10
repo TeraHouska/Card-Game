@@ -5,11 +5,19 @@ export class Player {
     hand = [];
     /** @type {boolean} */
     isHuman;
+    /**@type {number} */
+    score = 0;
+    /**@type {number} */
+    lastScore = 0;
 
-    constructor(name, hand, isHuman=false) {
+    constructor(name, isHuman=false) {
         this.name = name;
-        this.hand = hand;
         this.isHuman = isHuman;
+    }
+
+    enterScore(score) {
+        this.lastScore = score;
+        this.score += score;
     }
 }
 
