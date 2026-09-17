@@ -27,7 +27,7 @@ function newGame() {
     createTable();
     p_number = 0;
     gameOver = false;
-    logBoard();
+    //logBoard();
     updateUI();
 }
 
@@ -65,7 +65,7 @@ async function makeMove(player, index, UIskipped=false) {
     } else {await playCard(player, index);}
     checkWin();
     p_number = (p_number + 1) % players.length;
-    logBoard();
+    //logBoard();
     if (UIskipped) return;
     updateUI();
 }
@@ -140,23 +140,11 @@ function getAvailableMoves(player) {
     const r = table[table.length-1].rank;
     const s = (queen_effect && r == 12)? queen_effect: table[table.length - 1].suit;
     if (r === 14 && active_card) { // ACE
-        for (const card of player.hand) {
-            if (card.rank === 14) {
-                moves.push(player.hand.indexOf(card));
-            }
-        }
+        player.hand.forEach((card, i) => card.rank === 14 ? moves.push(i) : undefined);
     } else if (r === 7 && active_card) { // SEVEN
-        for (const card of player.hand) {
-            if (card.rank === 7) {
-                moves.push(player.hand.indexOf(card));
-            }
-        }
+        player.hand.forEach((card, i) => card.rank === 7 ? moves.push(i) : undefined);
     } else {
-        for (const card of player.hand) {
-            if (card.rank === r || card.suit === s || card.rank === 12) {
-                moves.push(player.hand.indexOf(card));
-            }
-        }
+        player.hand.forEach((card, i) => [r,12].includes(card.rank) || card.suit === s ? moves.push(i) : undefined);
     }
     return moves;
 }
@@ -332,16 +320,16 @@ function updateUI(disabled=false) {
             if (players.indexOf(player) === p_number && !disabled) {
                 playableIndices = getAvailableMoves(player);
             }
-            for (const card of player.hand) {
-                let playable = playableIndices.includes(player.hand.indexOf(card));
+            player.hand.forEach((card, i) => {
+                let playable = playableIndices.includes(i);
                 let cardEl = document.createElement("div");
                 cardEl.classList = `card card-front ${card.color} ${playable?"clickable":"disabled"}`;
                 cardEl.innerText = cardToValue(card);
                 if (playable) {
-                    cardEl.addEventListener('click', () => {makeMove(player, player.hand.indexOf(card))});
+                    cardEl.addEventListener('click', () => {makeMove(player, i)});
                 }
                 humanHand.appendChild(cardEl);
-            }
+            });
             continue;
         }
         let highlight = players.indexOf(player) == p_number ? "border-glow" : "";
