@@ -187,3 +187,18 @@ button {
 .overlay button {
     background-color: var(--overlay-btn-bg);
 }
+
+.overlay label, input {
+    font-size: large;
+}
+
+.overlay input {
+    width: 2.7rem;
+    border-radius: 15%;
+    padding: 3px;
+}
+
+#inputErrorMessage {
+    font-weight: bold;
+    color: var(--card-red);
+}

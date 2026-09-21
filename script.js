@@ -13,6 +13,7 @@ const winners = [];
 const SUITS = ['','♥','♦','♣','♠'];
 const RANKS = ['','A','2','3','4','5','6','7','8','9','10','J','Q','K','A'];
 const NAMES = ['Jediný člověk (Ty)', 'Alfa samec', 'Běžný občan', 'Cypřiš', 'Digga', 'Epistemos'];
+const numberOfCards = 32;
 let p_number = 0; // player to move
 let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
@@ -80,9 +81,9 @@ function createDeck() {
     deck.sort(() => Math.random() - 0.5);
 }
 
-function createPlayers(p_count) {
+function createPlayers() {
     allPlayers.splice(0, allPlayers.length);
-    for (let i = 0; i < p_count; i++) {
+    for (let i = 0; i < playerCount; i++) {
         allPlayers.push(new Player(NAMES[i], i===0));
     }
 }
@@ -253,9 +254,10 @@ function cardsToString(cardArray) {
  */
 function showOverlay(content) {
     document.getElementById("overlay").classList.add("open");
+    const overlayBoard = document.getElementById("overlay-board");
     if (content === "rules") {
-        document.getElementById("overlay-board").classList.remove("leader-board");
-        document.getElementById("overlay-board").innerHTML = 
+        overlayBoard.classList.remove("leader-board");
+        overlayBoard.innerHTML = 
             `<h2>Jak hrát</h2>
             <p>Pravidla jsou podobná karetní hře <strong>prší</strong>, nebo <strong>UNO</strong>.</p>
             <ul>
@@ -270,9 +272,10 @@ function showOverlay(content) {
             <button id="btnCloseRules">Chápu</button>`; 
         document.getElementById('btnCloseRules').addEventListener('click', () => {
             document.getElementById('overlay').classList.remove('open');
+            overlayBoard.innerHTML = "";
         });
     } else if (content === "leaderBoard") {
-        document.getElementById("overlay-board").classList.add("leader-board");
+        overlayBoard.classList.add("leader-board");
         let innerContent = `<h2>Síň slávy</h2><table>
                     <thead>
                         <tr>
@@ -288,12 +291,60 @@ function showOverlay(content) {
             <td>${winner.lastScore}</td>
             <td>${winner.score}</td></tr>`});
         innerContent += `</tbody></table><button id="btnRestart">Hrát znovu</button>`;
-        document.getElementById("overlay-board").innerHTML = innerContent;
+        overlayBoard.innerHTML = innerContent;
         document.getElementById('btnRestart').addEventListener('click', () => {
             document.getElementById('overlay').classList.remove('open');
             newGame();
+            overlayBoard.innerHTML = "";
+        });
+    } else if (content === "settings") {
+        overlayBoard.classList.remove("leader-board");
+        overlayBoard.innerHTML = `
+                    <label for="playerCount">Počet hráčů</label>
+                    <input type="number" id="playerCount" value="${playerCount}" min="2" max="6" />
+                    <label for="cardsInHand">Počet karet</label>
+                    <input type="number" id="cardsInHand" value="${cardsInHand}" min="3" max="8" />
+                    <button id="btnSet">Použít</button>
+                    <button id="btnReset">Resetovat</button>
+                    <p id="inputErrorMessage"></p>`;
+        document.getElementById('btnSet').addEventListener('click', () => {
+            try {
+                renderInputSettings();
+            } catch (err) {
+                document.getElementById("inputErrorMessage").innerText = err.message;
+                return;
+            }
+            document.getElementById('overlay').classList.remove('open');
+            overlayBoard.innerHTML = "";
+        });
+        document.getElementById('btnReset').addEventListener('click', () => {
+            resetSettings();
+            document.getElementById('overlay').classList.remove('open');
+            overlayBoard.innerHTML = "";
         });
     }
+}
+
+function renderInputSettings() {
+    const pc = Number(document.getElementById("playerCount").value);
+    const ch = Number(document.getElementById("cardsInHand").value);
+    if (pc < 2 || pc > 6) throw new RangeError("Počet hráčů musí být od 2 do 6");
+    if (ch < 3 || ch > 8) throw new RangeError("Počet karet musí být od 3 do 8");
+    if (pc * ch > 0.65 * numberOfCards) throw new RangeError("Počet rozdaných karet nesmí přesáhnout 65 % všech karet");
+    if (pc !== playerCount) {
+        playerCount = pc;
+        createPlayers();
+    }
+    playerCount = pc;
+    cardsInHand = ch;
+    newGame();
+}
+
+function resetSettings() {
+    playerCount = 4;
+    cardsInHand = 4;
+    createPlayers();
+    newGame();
 }
 
 function logBoard() {
@@ -380,7 +431,8 @@ function updateUI(disabled=false) {
 document.getElementById("newGame").addEventListener("click", newGame);
 document.getElementById("nextMove").addEventListener("click", () => nextMove());
 document.getElementById("fastForward").addEventListener("click", fastForward);
-document.getElementById('btnRules').addEventListener('click', () => showOverlay("rules"));
+document.getElementById("btnRules").addEventListener("click", () => showOverlay("rules"));
+document.getElementById("settings").addEventListener("click", () => showOverlay("settings"));
 
 // Closing overlay
 document.getElementById("overlay").addEventListener("click", (e) => {
@@ -388,5 +440,5 @@ document.getElementById("overlay").addEventListener("click", (e) => {
         document.getElementById('overlay').classList.remove('open');
 });
 
-createPlayers(playerCount);
+createPlayers();
 newGame();
