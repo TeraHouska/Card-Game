@@ -202,3 +202,8 @@ button {
     font-weight: bold;
     color: var(--card-red);
 }
+
+.red-bold {
+    color: var(--card-red);
+    font-weight: bold;
+}

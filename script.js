@@ -1,4 +1,5 @@
 import { Player, Card } from "./object.js";
+import { leaderboard, rules, settings } from "./overlay.js";
 
 /** @type {Array<Card>} */
 const deck = [];
@@ -19,8 +20,8 @@ let active_card = 0; // ACE or SEVEN
 let queen_effect = 0; // 0 ... no effect, 1-4 ... according to colors
 let gameOver = false;
 
-let playerCount = 4;
-let cardsInHand = 4;
+window.playerCount = 4;
+window.cardsInHand = 4;
 
 function newGame() {
     createDeck();
@@ -254,59 +255,22 @@ function cardsToString(cardArray) {
  */
 function showOverlay(content) {
     document.getElementById("overlay").classList.add("open");
-    const overlayBoard = document.getElementById("overlay-board");
+    const overlayBoard = document.getElementById("overlayBoard");
     if (content === "rules") {
         overlayBoard.classList.remove("leader-board");
-        overlayBoard.innerHTML = 
-            `<h2>Jak hrát</h2>
-            <p>Pravidla jsou podobná karetní hře <strong>prší</strong>, nebo <strong>UNO</strong>.</p>
-            <ul>
-                <li>Na začátku každý hráč dostane <strong>4 karty</strong>.</li>
-                <li>Hráč, který je na řadě odhodí kartu, která se shoduje s kartou na stole buď <strong>barvou</strong> (♠ ♥ ♦ ♣) nebo <strong>hodnotou</strong> (A, 2, 3 … K).</li>
-                <li>Pokud hráč nemá v ruce kartu, kterou může zahrát, lízne si jednu kartu z balíčku.</li>
-                <li><strong>Karta Q</strong> je měnič a lze s ní změnit barvu na stole.</li>
-                <li><strong>Karta A</strong> je eso. Další hráč musí zahrát buď eso, nebo se zdržet tahu.</li>
-                <li>Po zahrání <strong>karty 7</strong> musí další hráč zahrát také <strong>kartu 7</strong>, nebo si lízne za každou takto zahranou <strong>kartu 7</strong> dvě karty. (maximálně 8)</li>
-                <li><strong>Vítězem</strong> je ten hráč, kterému nezbydou v ruce žádné karty!</li>
-            </ul>
-            <button id="btnCloseRules">Chápu</button>`; 
-        document.getElementById('btnCloseRules').addEventListener('click', () => {
-            document.getElementById('overlay').classList.remove('open');
-            overlayBoard.innerHTML = "";
-        });
+        overlayBoard.appendChild(rules());
     } else if (content === "leaderBoard") {
         overlayBoard.classList.add("leader-board");
-        let innerContent = `<h2>Síň slávy</h2><table>
-                    <thead>
-                        <tr>
-                            <th>Pořadí</th>
-                            <th>Jméno</th>
-                            <th>Skóre</th>
-                            <th>Celkem</th>
-                        </tr>
-                    </thead><tbody>`;
-        winners.forEach((winner, index) => {innerContent += `<tr>
-            <td>${index+1 + "."}</td>
-            <td>${winner.name}</td>
-            <td>${winner.lastScore}</td>
-            <td>${winner.score}</td></tr>`});
-        innerContent += `</tbody></table><button id="btnRestart">Hrát znovu</button>`;
-        overlayBoard.innerHTML = innerContent;
-        document.getElementById('btnRestart').addEventListener('click', () => {
+        overlayBoard.appendChild(leaderboard(winners));
+        document.getElementById("btnPlayAgain").addEventListener('click', () => {
             document.getElementById('overlay').classList.remove('open');
             newGame();
             overlayBoard.innerHTML = "";
         });
     } else if (content === "settings") {
         overlayBoard.classList.remove("leader-board");
-        overlayBoard.innerHTML = `
-                    <label for="playerCount">Počet hráčů</label>
-                    <input type="number" id="playerCount" value="${playerCount}" min="2" max="6" />
-                    <label for="cardsInHand">Počet karet</label>
-                    <input type="number" id="cardsInHand" value="${cardsInHand}" min="3" max="8" />
-                    <button id="btnSet">Použít</button>
-                    <button id="btnReset">Resetovat</button>
-                    <p id="inputErrorMessage"></p>`;
+        overlayBoard.appendChild(settings());
+
         document.getElementById('btnSet').addEventListener('click', () => {
             try {
                 renderInputSettings();
@@ -436,8 +400,10 @@ document.getElementById("settings").addEventListener("click", () => showOverlay(
 
 // Closing overlay
 document.getElementById("overlay").addEventListener("click", (e) => {
-    if (e.target === document.getElementById('overlay'))
+    if (e.target === document.getElementById('overlay')) {
         document.getElementById('overlay').classList.remove('open');
+        document.getElementById("overlayBoard").innerHTML = "";
+    }
 });
 
 createPlayers();
